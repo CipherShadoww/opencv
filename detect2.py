@@ -26,7 +26,8 @@ def get_color_name(average_color):
         return "Unknown" 
     
 
-#cap = cv2.VideoCapture(0);
+cap = cv2.VideoCapture(1);
+cv2.waitKey(1000)
 cv2.namedWindow("tracking")
 cv2.createTrackbar("lv","tracking",0,255,nothing)
 cv2.createTrackbar("uv","tracking",0,255,nothing)
@@ -34,14 +35,17 @@ knownsize = 0.1 # just for example
 focallength = 500.0      
 
 while(True):
-   # ret,frame=cap.read()
-    frame=cv.imread("/Users/deepesh/Downloads/images.jpeg")
+    ret,frame=cap.read()
+    #frame=cv.imread("/Users/deepesh/Downloads/images.jpeg")
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lv=cv2.getTrackbarPos("lv","tracking")
     uv=cv2.getTrackbarPos("uv","tracking")
-    ret,thresh=cv2.threshold(gray,lv,uv,cv2.THRESH_BINARY)
-    contours,hierarchy=cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+    canny=cv2.Canny(gray,100,255)
+    kernel=np.ones((2,2))
+    dilated=cv2.dilate(canny,kernel,iterations=1)#removing noise
+    #ret,thresh=cv2.threshold(gray,lv,uv,cv2.THRESH_BINARY)
+    contours,hierarchy=cv2.findContours(canny,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
 
     for contour in contours:
        approx=cv2.approxPolyDP(contour,0.001*cv2.arcLength(contour,True),True)
@@ -83,7 +87,7 @@ while(True):
  
 
 
-    cv2.imshow('frame',frame)
+    cv2.imshow('frame',dilated)
     if cv2.waitKey(1)&0xFF==ord('q'):
       break
 
